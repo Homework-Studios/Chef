@@ -1,3 +1,5 @@
+using Chef.chip;
+
 namespace Chef.interpreter;
 
 public class ChipInterpreter
@@ -11,21 +13,17 @@ public class ChipInterpreter
     private string[] InputNames;
 
     private string[] BasicChips = new[] {"and", "not"};
-    private List<string> KnownChips = new List<string>();
-    //A dictionary of all known custom chips and their path to the file
-    private Dictionary<string, string> CustomChips = new Dictionary<string, string>();
-    //Dictory of all known custom chips and their required inputs
-    private Dictionary<string, int> CustomChipInputs = new Dictionary<string, int>();
+    private List<Chip> Chips = new List<Chip>();
 
-    public bool[] Interpret(string optimizedFileContent, bool[] inputs)
+    public bool[]? Interpret(string optimizedFileContent, bool[] inputs, string path)
     {
         ChipName = optimizedFileContent.Split('(')[0];
-        KnownChips.Add(ChipName);
-
+        Chips.Add(new (ChipName, path, RequiredInputCount(optimizedFileContent)));
+        Chips.Add(new ("and", "none", 2));
+        Chips.Add(new ("not", "none", 1));
+        
         optimizedFileContent = ImportAll(optimizedFileContent);
-        
-        Console.WriteLine(optimizedFileContent);
-        
+
         Inputs = inputs;
         InputNames = optimizedFileContent.Split('(')[1].Split(')')[0].Split(',');
         
@@ -35,7 +33,7 @@ public class ChipInterpreter
         {
             string chipName = GetOtherChipName(chipWithArgs);
 
-            if (!IsAChip(chipName))
+            if (!IsChip(chipName))
             {
                 bool? input = GetInput(chipName);
                 if (input != null)
@@ -48,8 +46,8 @@ public class ChipInterpreter
             
             return RunChip(chipName, chipInputs);
         }
-
-        return new bool[0];
+        
+        return null;
     }
 
     public string ImportAll(string content)
@@ -64,9 +62,8 @@ public class ChipInterpreter
             {
                 string path = import.Split('"')[1];
                 string name = path.Split('/')[path.Split('/').Length - 1].Split('.')[0];
-                CustomChips.Add(name, path);
                 int requiredInputs = Run.RequiredInputCount(path);
-                CustomChipInputs.Add(name, requiredInputs);
+                Chips.Add(new (name, path, requiredInputs));
             }
         }
         //Remove the imports from the content
@@ -108,32 +105,19 @@ public class ChipInterpreter
     {
         string chipName = GetOtherChipName(chipWithArgs);
         string first = chipWithArgs.Replace(chipName + "(", "");
-        string reversed = new string(first.ToCharArray().Reverse().ToArray());
-        string second = reversed.Substring(1);
-        string args = new string(second.ToCharArray().Reverse().ToArray());
-        return args.Split(',');
+        string second = first.Substring(0, first.Length - 1);
+        return second.Split(',');
     }
     
     public int GetOtherChipInputCount(string chipName)
     {
-        switch (chipName)
+        Chip? chip = GetChip(chipName);
+        if (chip != null)
         {
-            case "and":
-                return 2;
-            case "not":
-                return 1;
-            default:
-                if (CustomChipInputs.ContainsKey(chipName))
-                {
-                    return CustomChipInputs[chipName];
-                }
-                else
-                {
-                    ErrorThrower.ThrowError("Chip not found: " + chipName);
-                    return 0;
-                }
-            
+            return chip.InputCount;
         }
+        ErrorThrower.ThrowError("Chip not found: " + chipName);
+        return 0;
     }
     
     public bool[] GetOtherChipInputs(string chipWithArgs)
@@ -143,18 +127,9 @@ public class ChipInterpreter
         List<bool> inputsList = new List<bool>();
         foreach (string arg in args)
         {
-            if (IsAChip(arg))
+            if (IsChip(arg))
             {
-                if (IsCustomChip(arg))
-                {
-                    bool[] outs = Run.RunChip(GetPathForCustomChip(GetOtherChipName(arg)), GetOtherChipInputs(arg));
-                    inputsList.AddRange(outs);
-                }
-                else
-                {
-                    bool[] outs = RunChip(GetOtherChipName(arg), GetOtherChipInputs(arg));
-                    inputsList.AddRange(outs);
-                }
+                RunChip(arg, inputs);
             }
             else
             {
@@ -166,59 +141,50 @@ public class ChipInterpreter
         return new[] {inputsList[0]};
     }
 
-    public bool[] RunChip(string chipName, bool[] inputs)
+    public bool[]? RunChip(string chipName, bool[] inputs)
     {
         if (GetOtherChipInputCount(chipName) != inputs.Length)
         {
             ErrorThrower.ThrowError("Chip " + chipName + " needs " + GetOtherChipInputCount(chipName) + " inputs, but got " + inputs.Length);
-            return new bool[0];
+            return null;
         }
-        //Check if its a base chip
-        bool[]? baseChipResult = RunBaseChip(chipName, inputs);
-        if (baseChipResult != null)
-            return baseChipResult;
-        
+
         //Check if it is a custom chip and then run it
-        if (IsCustomChip(chipName))
+        if (IsChip(chipName))
         {
-            return Run.RunChip(GetPathForCustomChip(chipName), inputs);
+            Chip? chip = GetChip(chipName);
+            if (chip != null)
+            {
+                return chip.Run(inputs);
+            }
         }
         
         ErrorThrower.ThrowError("Chip not found: " + chipName);
-        return new bool[0];
+        return null;
+    }
+    
+    public Chip? GetChip(string chipName)
+    {
+        foreach (Chip chip in Chips)
+        {
+            if (chip.Name == chipName)
+            {
+                return chip;
+            }
+        }
+        return null;
     }
 
-    public bool IsBaseChip(string chipName)
+    public string? GetPathForCustomChip(string chipName)
     {
-        return BasicChips.Contains(chipName);
+        Chip? chip = GetChip(chipName);
+        if (chip == null) return null;
+        return chip.Path;
     }
     
-    public bool IsCustomChip(string chipName)
+    public bool IsChip(string chipName)
     {
-        return CustomChips.ContainsKey(chipName);
-    }
-    
-    public string GetPathForCustomChip(string chipName)
-    {
-        return CustomChips[chipName];
-    }
-    
-    public bool IsAChip(string chipName)
-    {
-        return KnownChips.Contains(chipName) || IsBaseChip(chipName) || IsCustomChip(chipName);
-    }
-    
-    private bool[]? RunBaseChip(string chipName, bool[] inputs)
-    {
-        switch (chipName)
-        {
-            case "and":
-                return new[] {inputs[0] && inputs[1]};
-            case "not":
-                return new[] {!inputs[0]};
-            default:
-                return null;
-        }
+        return GetChip(chipName) != null;
     }
 
     public int RequiredInputCount(string optimized)
@@ -227,7 +193,7 @@ public class ChipInterpreter
         foreach (string chipWithArgs in chipsWithArgs)
         {
             string chipName = GetOtherChipName(chipWithArgs);
-            if (IsAChip(chipName))
+            if (IsChip(chipName))
             {
                 return GetOtherChipInputCount(chipName);
             }

@@ -16,12 +16,12 @@ public class Run
         return interpreter.RequiredInputCount(optimized);
     }
     
-    public static bool[] RunChip(string path, bool[] inputs)
+    public static bool[]? RunChip(string path, bool[] inputs)
     {
         //Read the file
         string[] lines = System.IO.File.ReadAllLines(path);
         string content = String.Join(Environment.NewLine, lines);
         string optimized = optimizer.Optimize(content);
-        return interpreter.Interpret(optimized, inputs);
+        return interpreter.Interpret(optimized, inputs, path);
     }
 }

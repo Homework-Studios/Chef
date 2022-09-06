@@ -23,8 +23,14 @@ class Program
             inputs[i] = binaryArgs[i] == "1";
         }
 
-        bool[] output = Run.RunChip(path, inputs);
+        bool[]? output = Run.RunChip(path, inputs);
         
+        if(output == null)
+        {
+            ErrorThrower.ThrowError("The Chip did not return a value");
+            return;
+        }
+
         Console.WriteLine(String.Join(" ", output));
     }
 }
