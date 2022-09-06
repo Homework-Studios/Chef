@@ -6,16 +6,12 @@ namespace Chef.interpreter;
 public class ChipInterpreter
 {
     
-    private string ChipName;
-    private bool[] Inputs;
-    private string[] InputNames;
-
     private string[] BasicChips = new[] {"and", "not"};
     private List<Chip> Chips = new List<Chip>();
 
     public bool[]? Interpret(string optimizedFileContent, bool[] inputs, string path)
     {
-        ChipName = optimizedFileContent.Split('(')[0];
+        string ChipName = optimizedFileContent.Split('(')[0];
         Chips.Add(new (ChipName, path, RequiredInputCount(optimizedFileContent)));
         Chips.Add(new ("and", "none", 2));
         Chips.Add(new ("not", "none", 1));
@@ -23,7 +19,7 @@ public class ChipInterpreter
         
         optimizedFileContent = ImportAll(optimizedFileContent);
         
-        InputNames = optimizedFileContent.Split('(')[1].Split(')')[0].Split(',');
+        string[] InputNames = optimizedFileContent.Split('(')[1].Split(')')[0].Split(',');
         //replace all the input names with the actual inputs (0 or 1)
         for (int i = 0; i < InputNames.Length; i++)
         {
