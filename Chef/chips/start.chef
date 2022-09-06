@@ -1,5 +1,8 @@
 import: "/home/jonas/RiderProjects/Chef/Chef/chips/nand.chef";
 
-baseChip(1,2){
-    nand(1,2)
+start(1,2){
+    // I
+    /* love */
+    // Comments
+    and(1,2)
 }

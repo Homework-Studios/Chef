@@ -5,9 +5,6 @@ namespace Chef.interpreter;
 public class ChipInterpreter
 {
     
-    //The File may look like: baseChip(input1,input2){and(input1,input2)}
-    //What means: chipName(args){otherChip(args)}
-
     private string ChipName;
     private bool[] Inputs;
     private string[] InputNames;
