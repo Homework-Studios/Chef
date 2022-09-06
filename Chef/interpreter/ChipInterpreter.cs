@@ -1,4 +1,5 @@
 using Chef.chip;
+using Microsoft.VisualBasic;
 
 namespace Chef.interpreter;
 
@@ -39,8 +40,10 @@ public class ChipInterpreter
                 }
             }
             
-            bool[] chipInputs = GetOtherChipInputs(chipWithArgs);
+            bool[]? chipInputs = GetOtherChipInputs(chipWithArgs);
             
+            if(chipInputs == null) return null;
+
             return RunChip(chipName, chipInputs);
         }
         
@@ -97,15 +100,54 @@ public class ChipInterpreter
     {
         return chipWithArgs.Split('(')[0];
     }
-    
-    public string[] GetChipArgs(string chipWithArgs)
+
+    public string RemoveUntilBracket(string chipWithArgs)
     {
-        string chipName = GetOtherChipName(chipWithArgs);
-        string first = chipWithArgs.Replace(chipName + "(", "");
-        string second = first.Substring(0, first.Length - 1);
-        return second.Split(',');
+        foreach (char c in chipWithArgs)
+        {
+            if (c == '(' || c == ')')
+            {
+                chipWithArgs = chipWithArgs.Substring(1);
+                break;
+            }
+            chipWithArgs = chipWithArgs.Substring(1);
+        }
+        return chipWithArgs;
     }
     
+    //Worst thing that happend in my live so far
+    public string[] GetChipArgs(string chipWithArgs)
+    {
+        string args = RemoveUntilBracket(chipWithArgs);
+        args = new string(args.Reverse().ToArray());
+        args = RemoveUntilBracket(args);
+        args = new string(args.Reverse().ToArray());
+        int count = 0;
+        List<string> argsList = new List<string>();
+        string currentArg = "";
+        foreach (char c in args)
+        {
+            if (c == '(')
+            {
+                count++;
+            }
+            else if (c == ')')
+            {
+                count--;
+            }
+            else if (c == ',' && count == 0)
+            {
+                argsList.Add(currentArg);
+                currentArg = "";
+                continue;
+            }
+
+            currentArg += c;
+        }
+        argsList.Add(currentArg);
+        return argsList.ToArray();
+    }
+
     public int GetOtherChipInputCount(string chipName)
     {
         Chip? chip = GetChip(chipName);
@@ -117,47 +159,60 @@ public class ChipInterpreter
         return 0;
     }
     
-    public bool[] GetOtherChipInputs(string chipWithArgs)
+    public bool[]? GetOtherChipInputs(string chipWithArgs)
     {
-        string[] args = GetChipArgs(chipWithArgs);
-        bool[] inputs = new bool[args.Length];
-        List<bool> inputsList = new List<bool>();
-        foreach (string arg in args)
+        //chipWithArgs could look like: and(not(a),b)
+        //Which Means: chip(chip(a),b)
+        //So we need to get the args of the chip and then get the args of the args
+        string[] chipArgs = GetChipArgs(chipWithArgs);
+        bool[] chipInputs = new bool[chipArgs.Length];
+        for (int i = 0; i < chipArgs.Length; i++)
         {
-            if (IsChip(arg))
+            string chipArg = chipArgs[i];
+            string name = GetOtherChipName(chipArgs[i]);
+            if (IsChip(name))
             {
-                RunChip(arg, inputs);
+                //chipArg is a chip
+                //so we need to get the inputs of the chip
+                bool[]? otherChipInputs = GetOtherChipInputs(chipArg);
+                if (otherChipInputs == null) return null;
+                //run the chip but it can return more than one output
+                bool[]? otherChipOutputs = RunChip(name, otherChipInputs);
+                if (otherChipOutputs == null) return null;
+                //we only need to add all the outputs to the inputs
+                foreach (bool otherChipOutput in otherChipOutputs)
+                {
+                    chipInputs[i] = otherChipOutput;
+                }
             }
             else
             {
-                bool? input = GetInput(arg);
-                if(input != null) inputsList.Add((bool) input);
+                //chipArg is an input
+                //so we need to get the value of the input
+                bool? input = GetInput(name);
+                if (input == null) return null;
+                chipInputs[i] = (bool) input;
             }
         }
-        if(inputsList.Count > 1) return inputsList.ToArray();
-        return new[] {inputsList[0]};
+        return chipInputs;
     }
 
     public bool[]? RunChip(string chipName, bool[] inputs)
     {
-        if (GetOtherChipInputCount(chipName) != inputs.Length)
+        Chip? chip = GetChip(chipName);
+        if (chip == null)
+        {
+            ErrorThrower.ThrowError("Chip not found: " + chipName);
+            return null;
+        }
+
+        if (chip.InputCount != inputs.Length)
         {
             ErrorThrower.ThrowError("Chip " + chipName + " needs " + GetOtherChipInputCount(chipName) + " inputs, but got " + inputs.Length);
             return null;
         }
 
-        //Check if it is a custom chip and then run it
-        if (IsChip(chipName))
-        {
-            Chip? chip = GetChip(chipName);
-            if (chip != null)
-            {
-                return chip.Run(inputs);
-            }
-        }
-        
-        ErrorThrower.ThrowError("Chip not found: " + chipName);
-        return null;
+        return chip.Run(inputs);
     }
     
     public Chip? GetChip(string chipName)
@@ -186,15 +241,9 @@ public class ChipInterpreter
 
     public int RequiredInputCount(string optimized)
     {
-        string[] chipsWithArgs = optimized.Split('{')[1].Split('}')[0].Split(';');
-        foreach (string chipWithArgs in chipsWithArgs)
-        {
-            string chipName = GetOtherChipName(chipWithArgs);
-            if (IsChip(chipName))
-            {
-                return GetOtherChipInputCount(chipName);
-            }
-        }
-        return 0;
+        string[] split = optimized.Split('(');
+        string[] split2 = split[1].Split(')');
+        string[] split3 = split2[0].Split(',');
+        return split3.Length;
     }
 }
