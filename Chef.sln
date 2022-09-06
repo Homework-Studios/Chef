@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chef", "Chef\Chef.csproj", "{28688424-C19A-406C-AC2B-52423DFA4F4A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chef", "Chef\Chef.csproj", "{4F8B88A4-F493-44EA-9E65-BF1A676D9279}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +8,9 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{28688424-C19A-406C-AC2B-52423DFA4F4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{28688424-C19A-406C-AC2B-52423DFA4F4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{28688424-C19A-406C-AC2B-52423DFA4F4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{28688424-C19A-406C-AC2B-52423DFA4F4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4F8B88A4-F493-44EA-9E65-BF1A676D9279}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F8B88A4-F493-44EA-9E65-BF1A676D9279}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F8B88A4-F493-44EA-9E65-BF1A676D9279}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F8B88A4-F493-44EA-9E65-BF1A676D9279}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

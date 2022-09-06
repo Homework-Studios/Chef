@@ -1,8 +1,0 @@
-//Comment: Default Chips = and - not
-//Only Binary
-
-import: path/to/chip.chef
-
-baseChip(input1, input2){
-    and(input1, input2)
-}
