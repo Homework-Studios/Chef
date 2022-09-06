@@ -1,2 +1,3 @@
-/home/jonas/RiderProjects/Chef/Chef/obj
-/home/jonas/RiderProjects/Chef/Chef/bin
+./obj
+./bin
+../.idea
