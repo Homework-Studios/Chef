@@ -24,6 +24,8 @@ public class Chip
                 return And.Run(inputs);
             case "not":
                 return Not.Run(inputs);
+            case "out":
+                return Out.Run(inputs);
             default:
                 return Chef.Run.RunChip(Path, inputs);
         }

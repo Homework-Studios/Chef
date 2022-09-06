@@ -1,0 +1,6 @@
+import: "/home/jonas/RiderProjects/Chef/Chef/chips/nand.chef";
+import: "/home/jonas/RiderProjects/Chef/Chef/chips/or.chef";
+
+xor(f, s){
+    and(or(f, s), nand(f, s))
+}

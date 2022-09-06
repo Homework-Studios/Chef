@@ -19,11 +19,16 @@ public class ChipInterpreter
         Chips.Add(new (ChipName, path, RequiredInputCount(optimizedFileContent)));
         Chips.Add(new ("and", "none", 2));
         Chips.Add(new ("not", "none", 1));
+        Chips.Add(new ("out", "none", -1));
         
         optimizedFileContent = ImportAll(optimizedFileContent);
-
-        Inputs = inputs;
+        
         InputNames = optimizedFileContent.Split('(')[1].Split(')')[0].Split(',');
+        //replace all the input names with the actual inputs (0 or 1)
+        for (int i = 0; i < InputNames.Length; i++)
+        {
+            optimizedFileContent = optimizedFileContent.Replace(InputNames[i], inputs[i].ToString());
+        }
         
         string[] chipsWithArgs = optimizedFileContent.Split('{')[1].Split('}')[0].Split(';');
 
@@ -31,16 +36,13 @@ public class ChipInterpreter
         {
             string chipName = GetOtherChipName(chipWithArgs);
 
-            if (!IsChip(chipName))
+            if (!IsChip(chipName) && chipName.Length == 1)
             {
-                bool? input = GetInput(chipName);
-                if (input != null)
-                {
-                    return new []{(bool) input};
-                }
+                bool? input = StrToBool(chipName);
+                return new []{(bool) input};
             }
             
-            bool[]? chipInputs = GetOtherChipInputs(chipWithArgs);
+            bool[]? chipInputs = GetOtherChipInputs(chipWithArgs, InputNames);
             
             if(chipInputs == null) return null;
 
@@ -50,6 +52,11 @@ public class ChipInterpreter
         return null;
     }
 
+    public bool StrToBool(string i)
+    {
+        return i == "1";
+    }
+    
     public string ImportAll(string content)
     {
         //the imports are at the start of the file
@@ -70,30 +77,6 @@ public class ChipInterpreter
         //split the string at the last ; and take the second part
         content = content.Split(';')[content.Split(';').Length - 1];
         return content;
-    }
-
-    public bool? GetInput(string inputName)
-    {
-        bool reverse = inputName.StartsWith("!");
-        inputName = inputName.Replace("!", "");
-        
-        if (!InputNames.Contains(inputName))
-        {
-            ErrorThrower.ThrowError("Input not found: " + inputName);
-            return null;
-        }
-        
-        for (int i = 0; i < InputNames.Length; i++)
-        {
-            if (InputNames[i] == inputName)
-            {
-                if(reverse) return !Inputs[i];
-                
-                return Inputs[i];
-            }
-        }
-        
-        return null;
     }
 
     public string GetOtherChipName(string chipWithArgs)
@@ -159,7 +142,7 @@ public class ChipInterpreter
         return 0;
     }
     
-    public bool[]? GetOtherChipInputs(string chipWithArgs)
+    public bool[]? GetOtherChipInputs(string chipWithArgs, string[] inputNames)
     {
         //chipWithArgs could look like: and(not(a),b)
         //Which Means: chip(chip(a),b)
@@ -174,7 +157,7 @@ public class ChipInterpreter
             {
                 //chipArg is a chip
                 //so we need to get the inputs of the chip
-                bool[]? otherChipInputs = GetOtherChipInputs(chipArg);
+                bool[]? otherChipInputs = GetOtherChipInputs(chipArg, inputNames);
                 if (otherChipInputs == null) return null;
                 //run the chip but it can return more than one output
                 bool[]? otherChipOutputs = RunChip(name, otherChipInputs);
@@ -189,9 +172,8 @@ public class ChipInterpreter
             {
                 //chipArg is an input
                 //so we need to get the value of the input
-                bool? input = GetInput(name);
-                if (input == null) return null;
-                chipInputs[i] = (bool) input;
+                bool input = StrToBool(name);
+                chipInputs[i] = input;
             }
         }
         return chipInputs;
@@ -206,7 +188,7 @@ public class ChipInterpreter
             return null;
         }
 
-        if (chip.InputCount != inputs.Length)
+        if (chip.InputCount != inputs.Length && chip.InputCount != -1)
         {
             ErrorThrower.ThrowError("Chip " + chipName + " needs " + GetOtherChipInputCount(chipName) + " inputs, but got " + inputs.Length);
             return null;
