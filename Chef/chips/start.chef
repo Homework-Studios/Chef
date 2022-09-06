@@ -1,0 +1,5 @@
+import: "/home/jonas/RiderProjects/Chef/Chef/chips/nand.chef";
+
+baseChip(1,2){
+    nand(1,2)
+}
