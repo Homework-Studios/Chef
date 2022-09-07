@@ -4,6 +4,6 @@ public class ErrorThrower
 {
     public static void ThrowError(string message)
     {
-        Console.WriteLine("Error: " + message);
+        Console.Error.WriteLine("Error: " + message);
     }
 }
