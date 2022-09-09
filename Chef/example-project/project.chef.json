@@ -1,0 +1,6 @@
+{
+  "name": "MyChefProgram",
+  "description": "My Chef Program Description",
+  "start": "derc/example/main.chef",
+  "arguments": [1, 1]
+}

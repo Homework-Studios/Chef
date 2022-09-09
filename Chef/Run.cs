@@ -23,5 +23,6 @@ public class Run
     public static void CompileProject(string pathToProject)
     {
         Debug.Log("Compiling project: " + pathToProject);
+        Project project = new Project(pathToProject);
     }
 }
