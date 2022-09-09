@@ -9,6 +9,7 @@ class Program
 {
     static void Main(string[] args)
     {
+        Console.WriteLine("Chef - Homework-Studios, All rights reserved.");
         Debug.Log("Initializing Chef...");
         Run.Startup(args);
     }
