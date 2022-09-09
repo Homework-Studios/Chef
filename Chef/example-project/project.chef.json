@@ -1,6 +1,8 @@
 {
   "name": "MyChefProgram",
   "description": "My Chef Program Description",
+  "version": "1.0.0",
+  "author": "DerCooleVonDem",
   "start": "derc/example/main.chef",
   "arguments": [1, 1]
 }
