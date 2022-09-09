@@ -11,6 +11,11 @@ public class Debug
     {
         Console.WriteLine("Debug: " + String.Join(" ", message));
     }
+    
+    public static void Log(bool[] message)
+    {
+        Console.WriteLine("Debug: " + String.Join(" ", message));
+    }
 
     public static void CompileCommandError(string message)
     {

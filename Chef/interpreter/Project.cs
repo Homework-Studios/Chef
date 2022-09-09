@@ -1,4 +1,5 @@
 using Chef.interpreter.types;
+using Chef.utils;
 using Newtonsoft.Json.Linq;
 
 namespace Chef.interpreter;
@@ -51,13 +52,15 @@ public class Project
 
         GlobalStartPath = LocalPathToGlobalPath(StartPath);
         
-        StartChip = Run.Interpreter.LoadChip(GlobalStartPath);
+        StartChip = Run.Interpreter.LoadChip(GlobalStartPath, VariableUtil.IntArrayToBoolArray(Arguments));
         ProjectChips.Add(StartChip);
 
         if (!StartChip.ok) return;
 
         Debug.Log("Project started.");
         Debug.Log("Running Start Chip...");
+        
+        StartChip.RunPieces();
     }
     
     public string LocalPathToGlobalPath(string path)

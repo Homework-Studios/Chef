@@ -1,4 +1,4 @@
 chip: main(input1, input2){
-    var: output = and(input1, input2);
-    return: output;
+    //Ich liebe India
+    return: base:and(input1, input2);
 }
