@@ -1,3 +1,4 @@
+using Chef.interpreter.types;
 using Newtonsoft.Json.Linq;
 
 namespace Chef.interpreter;
@@ -13,10 +14,14 @@ public class Project
     public string? Author;
     
     public string? StartPath;
+    public string GlobalStartPath;
     public int[]? Arguments;
 
     public readonly string[] Properties = new[] {"name", "description", "version", "author", "start", "arguments"};
     
+    public Chip StartChip;
+    public List<Chip> ProjectChips = new List<Chip>();
+
     public Project(string path)
     {
         this.Path = path;
@@ -24,6 +29,7 @@ public class Project
         if (!TryFindProjectFile())
         {
             Debug.ProjectCompileError("Could not find project file at \'" + path + "\'.");
+            return;
         }
         
         Debug.Log("Running project at \'" + path + "\'.");
@@ -37,10 +43,24 @@ public class Project
         Debug.Log("Starting project at \'" + StartPath + "\'.");
         if (Arguments != null) Debug.Log("Project arguments: " + String.Join(" ", Arguments));
 
-        if (!DoesMainFileExist())
+        if (!DoesMainFileExist() && StartPath == null)
         {
             Debug.ProjectCompileError("Could not find main file at \'" + StartPath + "\'.");
+            return;
         }
+
+        GlobalStartPath = LocalPathToGlobalPath(StartPath);
+        
+        StartChip = Run.Interpreter.LoadChip(GlobalStartPath);
+        ProjectChips.Add(StartChip);
+        
+        Debug.Log("Project started.");
+        Debug.Log("Running Start Chip...");
+    }
+    
+    public string LocalPathToGlobalPath(string path)
+    {
+        return Path + "/" + path;
     }
     
     public bool TryFindProjectFile()
