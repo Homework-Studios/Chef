@@ -19,15 +19,12 @@ public class CommandRegist
 
     public void Run(string[] arguments)
     {
-        if(arguments.Length == 1)
+        if(arguments.Length == 0)
         {
             Debug.CompileCommandError("No command specified. Try using '--help' for a list of commands.");
             return;
         }
-        
-        //remove the first argument, which is the command
-        arguments = arguments.Skip(1).ToArray();
-        
+
         //the first argument should look like this --commandname
         string commandName = arguments[0];
 
