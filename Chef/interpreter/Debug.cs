@@ -21,4 +21,9 @@ public class Debug
     {
         Console.Error.WriteLine("ProjectCompileError: " + message);
     }
+    
+    public static void SyntaxError(string message, string at)
+    {
+        Console.Error.WriteLine("SyntaxError: " + message + " at " + at);
+    }
 }

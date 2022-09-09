@@ -53,7 +53,9 @@ public class Project
         
         StartChip = Run.Interpreter.LoadChip(GlobalStartPath);
         ProjectChips.Add(StartChip);
-        
+
+        if (!StartChip.ok) return;
+
         Debug.Log("Project started.");
         Debug.Log("Running Start Chip...");
     }
