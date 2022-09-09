@@ -1,3 +1,0 @@
-nand(f,s){
-    not(and(f, s))
-}

@@ -1,8 +1,0 @@
-import: "/home/jonas/RiderProjects/Chef/Chef/chips/nand.chef";
-import: "/home/jonas/RiderProjects/Chef/Chef/chips/or.chef";
-import: "/home/jonas/RiderProjects/Chef/Chef/chips/xor.chef";
-import: "/home/jonas/RiderProjects/Chef/Chef/chips/adder.chef";
-
-start(f){
-    adder(f, f, f)
-}

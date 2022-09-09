@@ -1,3 +1,4 @@
+using Chef.commands;
 using Chef.interpreter;
 using Chef.optimizer;
 
@@ -5,23 +6,22 @@ namespace Chef;
 
 public class Run
 {
-    public static FileOptimizer optimizer = new FileOptimizer();
-    public static ChipInterpreter interpreter = new ChipInterpreter();
+    
+    public static CommandRegist CommandRegist;
+    
+    public static FileOptimizer Optimizer = new FileOptimizer();
+    public static ChipInterpreter Interpreter = new ChipInterpreter();
 
-    public static int RequiredInputCount(string path)
+    public static void Startup(string[] arguments)
     {
-        string[] lines = System.IO.File.ReadAllLines(path);
-        string content = String.Join(Environment.NewLine, lines);
-        string optimized = optimizer.Optimize(content);
-        return interpreter.RequiredInputCount(optimized);
+        Debug.Log("Chef is starting up...");
+        CommandRegist = new CommandRegist();
+        Debug.Log("Commands Registered, accepting the command...");
+        CommandRegist.Run(arguments);
     }
     
-    public static bool[]? RunChip(string path, bool[] inputs)
+    public static void CompileProject(string pathToProject)
     {
-        //Read the file
-        string[] lines = System.IO.File.ReadAllLines(path);
-        string content = String.Join(Environment.NewLine, lines);
-        string optimized = optimizer.Optimize(content);
-        return interpreter.Interpret(optimized, inputs, path);
+        Debug.Log("Compiling project: " + pathToProject);
     }
 }

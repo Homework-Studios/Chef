@@ -1,6 +1,0 @@
-import: "/home/jonas/RiderProjects/Chef/Chef/chips/or.chef";
-import: "/home/jonas/RiderProjects/Chef/Chef/chips/xor.chef";
-
-adder(input1, input2, carry){
-    out(or(and(input1, input2), and(carry, xor(input1, input2))), xor(carry, xor(input1, input2)))
-}
